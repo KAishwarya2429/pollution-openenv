@@ -1,32 +1,36 @@
 import gradio as gr
-from env import PollutionEnv
-from agent import Agent
 
-env = PollutionEnv()
-agent = Agent()
+def pollution_report(location, aqi):
+    try:
+        aqi = int(aqi)
+    except:
+        return "❌ Please enter a valid AQI number"
 
-def run_simulation():
-    state = env.reset()
-    done = False
-    logs = []
+    if aqi <= 50:
+        status = "🟢 Good"
+        message = "Air quality is good. Enjoy outdoor activities!"
+    elif aqi <= 100:
+        status = "🟡 Moderate"
+        message = "Air quality is acceptable. Sensitive people should be careful."
+    elif aqi <= 200:
+        status = "🟠 Poor"
+        message = "Air quality is poor. Avoid outdoor activities."
+    else:
+        status = "🔴 Very Poor"
+        message = "Air quality is very unhealthy. Stay indoors!"
 
-    while not done:
-        action = agent.act(state)
-        state, reward, done, _ = env.step(action)
-        logs.append(f"Action: {action} | Pollution: {state['pollution']} | Reward: {reward}")
+    return f"📍 Location: {location}\n🌫 AQI: {aqi}\nStatus: {status}\n\n{message}"
 
-    logs.append("\nFINAL RESULT:")
-    logs.append(f"Pollution: {state['pollution']}")
-    logs.append("Status: PASS ✅" if state['pollution'] <= 30 else "FAIL ❌")
-
-    return "\n".join(logs)
 
 demo = gr.Interface(
-    fn=run_simulation,
-    inputs=[],
+    fn=pollution_report,
+    inputs=[
+        gr.Textbox(label="Enter Location"),
+        gr.Textbox(label="Enter AQI (Air Quality Index)")
+    ],
     outputs="text",
-    title="🌍 AI Pollution Control OpenEnv",
-    description="AI agent reduces pollution step-by-step"
+    title="🌍 Pollution Awareness App",
+    description="Check air quality status and get safety advice based on AQI."
 )
 
 demo.launch()
